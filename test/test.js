@@ -4,10 +4,18 @@
 const assert = require('assert');
 const util = require('util');
 const ExpressSocketIO = require('..');
+const SocketIO = require('socket.io');
+const SocketIOClient = require('socket.io-client');
 
 //
-function TestServer(port, schema, options){
+function TestServer(port, options){
+    var io = new SocketIO(port);
+    ExpressSocketIO(io, function(req, res, next){
+        console.log('connected');
+        next();
+    });
 
+    return io;
 }
 
 function logResponse(res){
@@ -16,19 +24,112 @@ function logResponse(res){
 
 //
 describe('ExpressSocketIO tests', function(){
+    const PORT = 12345;
     var server;
+    var client;
 
     before(function(){
-        
+        server = TestServer(PORT);
     });
 
-    after(function(done){
+    after(function(){
         if(server){
-            server.close(done);
+            server.close();
             server = null;
         }
     });
     
+    beforeEach(function(){
+        
+    });
+
+    afterEach(function(){
+        if(client){
+            client.disconnect();
+            client = null;
+        }
+    });
+
     //
+    it('register callbacks', function(done){
+        server.register('test:1', function(req, res, next){
+            next();
+        }, function(req, res, next){
+            next();
+        });
+        done();
+    });
+
+    it('register multiple callbacks', function(done){
+        try{
+            server.register('test:1', function(req, res, next){});
+        }
+        catch(err){
+            done();
+        }
+    });
+
+    //
+    it('client request', function(done){
+        server.register('test:2', function(req, res, next){
+            next();
+        }, function(req, res, next){
+            res.send({
+                data: req.query.data,
+                response: true
+            });
+            next();
+        });
+
+        client = SocketIOClient.connect('http://localhost:'+PORT);
+        client.emit('test:2', { data: 'test' }, function(err, res){
+            assert(err === null, 'response error');
+            assert(res.response === true, 'wrong response');
+            assert(res.data === 'test', 'wrong data');
+            done();
+        });
+    });
+
+    //
+    it('register callbacks with multiple send()', function(done){
+        server.register('test:3', function(req, res, next){
+            res.send({
+                data: req.query.data,
+                response: 1
+            });
+            next();
+        }, function(req, res, next){
+            res.send({
+                response: 2
+            });
+            next();
+        });
+
+        client = SocketIOClient.connect('http://localhost:'+PORT);
+        client.emit('test:3', { data: 'test' }, function(err, res){
+            assert(err === null, 'response error');
+            assert(res.response === 1, 'wrong response');
+            assert(res.data === 'test', 'wrong data');
+            done();
+        });
+    });
+
+    //
+    it('register callbacks raising next(error)', function(done){
+        server.register('test:4', function(req, res, next){
+            next(new Error('error!'));
+        }, function(req, res, next){
+            res.send({
+                response: 2
+            });
+            next();
+        });
+
+        client = SocketIOClient.connect('http://localhost:'+PORT);
+        client.emit('test:4', { data: 'test' }, function(err, res){
+            assert(err === 'error!', 'response error');
+            done();
+        });
+    });
 
 });

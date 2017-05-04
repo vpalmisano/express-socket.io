@@ -72,7 +72,7 @@ module.exports = function(server, connectCallback){
                         //
                         pathHandlers[i](req, res, function(err){
                             if(err){
-                                console.error('['+path+'] io error:', err);
+                                console.error('['+path+'] cb returned error:', err);
                                 cb && cb(err.message);
                                 return;
                             }
@@ -94,7 +94,7 @@ module.exports = function(server, connectCallback){
         debug('register', path);
 
         if(server._handlers[path]){
-            return console.error('Error: handler already registered:', path);
+            throw new Error('Error: handler already registered: '+path);
         }
 
         var pathHandlers = Array.prototype.slice.call(arguments, 1);
