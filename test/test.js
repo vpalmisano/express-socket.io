@@ -11,7 +11,7 @@ const SocketIOClient = require('socket.io-client');
 function TestServer(port, options){
     var io = new SocketIO(port);
     ExpressSocketIO(io, function(req, res, next){
-        console.log('connected');
+        //console.log('connected');
         next();
     });
 
@@ -57,12 +57,29 @@ describe('ExpressSocketIO tests', function(){
         }, function(req, res, next){
             next();
         });
+        assert(server._handlers['test:1'].length === 2);
         done();
     });
 
-    it('register multiple callbacks', function(done){
+    it('should not register multiple times on the same path', function(done){
         try{
             server.register('test:1', function(req, res, next){});
+        }
+        catch(err){
+            done();
+        }
+    });
+
+    it('unregister callback', function(done){
+        server.unregister('test:1');
+        assert(server._handlers['test:1'] === undefined);
+        done();
+    });
+
+
+    it('unregister not registered callback', function(done){
+        try{
+            server.unregister('test:0');
         }
         catch(err){
             done();

@@ -94,11 +94,22 @@ module.exports = function(server, connectCallback){
         debug('register', path);
 
         if(server._handlers[path]){
-            throw new Error('Error: handler already registered: '+path);
+            throw new Error('handler already registered: '+path);
         }
 
         var pathHandlers = Array.prototype.slice.call(arguments, 1);
         server._handlers[path] = pathHandlers;
     }
+
+    server.unregister = function(path){
+        debug('unregister', path);
+
+        if(!server._handlers[path]){
+            throw new Error('handler not registered: '+path);
+        }
+
+        delete(server._handlers[path]);
+    }
+
 
 }
