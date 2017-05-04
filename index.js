@@ -79,8 +79,8 @@ module.exports = function(server, connectCallback){
         }
     });
 
-    //
-    server.register = function(path){
+    server.register = function(){
+        var path = arguments[0];
         debug('register', path);
 
         if(server._handlers[path]){
@@ -89,5 +89,6 @@ module.exports = function(server, connectCallback){
 
         var pathHandlers = Array.prototype.slice.call(arguments, 1);
         server._handlers[path] = pathHandlers;
-    }.bind(server);
+    }
+
 }
