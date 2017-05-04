@@ -61,7 +61,7 @@ describe('ExpressSocketIO tests', function(){
         done();
     });
 
-    it('should not register multiple times on the same path', function(done){
+    it('should throw an exception when registering multiple times on the same path', function(done){
         try{
             server.register('test:1', function(req, res, next){});
         }
@@ -76,8 +76,7 @@ describe('ExpressSocketIO tests', function(){
         done();
     });
 
-
-    it('unregister not registered callback', function(done){
+    it('should throw an exception when unregistering not registered callback', function(done){
         try{
             server.unregister('test:0');
         }
@@ -87,7 +86,7 @@ describe('ExpressSocketIO tests', function(){
     });
 
     //
-    it('client request', function(done){
+    it('should response to a client request', function(done){
         server.register('test:2', function(req, res, next){
             next();
         }, function(req, res, next){
@@ -108,7 +107,7 @@ describe('ExpressSocketIO tests', function(){
     });
 
     //
-    it('register callbacks with multiple send()', function(done){
+    it('should response only with the first registered callback send()', function(done){
         server.register('test:3', function(req, res, next){
             res.send({
                 data: req.query.data,
@@ -132,7 +131,7 @@ describe('ExpressSocketIO tests', function(){
     });
 
     //
-    it('register callbacks raising next(error)', function(done){
+    it('should send a response error when using next(error)', function(done){
         server.register('test:4', function(req, res, next){
             next(new Error('error!'));
         }, function(req, res, next){
