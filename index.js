@@ -40,13 +40,13 @@ module.exports = function(server, connectCallback){
         //
         function _setupHandlers(){
             Object.keys(server._handlers).forEach(function(path){
-                trace('adding handler', path);
+                debug('adding handler', path);
 
                 var pathHandlers = server._handlers[path];
 
                 // register handler
                 socket.on(path, function(data, cb){
-                    trace('on '+path, data);
+                    debug('on '+path, data);
 
                     req.query = data;
                     var res = {}
@@ -75,7 +75,8 @@ module.exports = function(server, connectCallback){
 
                     applyNext();
                 });
-            }
+            });
+        }
     });
 
     //
