@@ -49,13 +49,23 @@ module.exports = function(server, connectCallback){
                     debug('on '+path, data);
 
                     req.query = data;
-                    var res = {}
+                    var res = {
+                        send: function(data){
+                            if(cb){
+                                cb(null, data);
+                                cb = null;
+                            }
+                            else{
+                                console.error('['+path+'] response send() already called');
+                            }
+                        }
+                    }
                     var i = 0;
                     
                     function applyNext(){
                         if(i >= pathHandlers.length){
-                            // return results
-                            cb && cb(null, res);
+                            // call cb if not already called
+                            cb && cb();
                             return;
                         }
 
