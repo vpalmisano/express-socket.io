@@ -10,10 +10,7 @@ const SocketIOClient = require('socket.io-client');
 //
 function TestServer(port, options){
     var io = new SocketIO(port);
-    ExpressSocketIO(io, function(req, res, next){
-        //console.log('connected');
-        next();
-    });
+    ExpressSocketIO(io);
 
     return io;
 }

@@ -16,89 +16,77 @@ module.exports = function(server, connectCallback){
     server.on('connection', function(socket){
         debug('connected');
 
-        var req = {
-            user: null,
-            query: null,
-            socket: socket,
-        }
-
         //
-        if(connectCallback){
-            connectCallback(req, null, function(err){
-                if(err){
-                    console.error(err);
-                    socket.disconnect();
+        socket.use(function(packet){
+            const path = packet[0];
+            const handlers = server._handlers[path];
+            var data = packet[1];
+            var cb = packet[2];
+            
+            if(!handlers){
+                console.warning('unknown message', path, data);
+                cb && cb();
+                return;
+            }
+            
+            //
+            debug(path, data);
+            
+            var req = _.extend({
+                query: data,
+                socket: socket,
+            }, socket.req || {});
+            
+            var res = {
+                send: function(data){
+                    if(cb){
+                        cb(null, data);
+                        cb = null;
+                    }
+                    else{
+                        console.error('['+path+'] response send() already called');
+                    }
+                }
+            }
+            
+
+            var i = 0;
+            
+            function applyNext(){
+                if(i >= handlers.length){
+                    // call cb if not already called
+                    debug('['+path+'] handlers returned');
+                    cb && cb();
                     return;
                 }
-                _setupHandlers();
-            });
-        }
-        else{
-            _setupHandlers();
-        }
 
-        //
-        function _setupHandlers(){
-            Object.keys(server._handlers).forEach(function(path){
-                debug('adding handler', path);
-
-                var pathHandlers = server._handlers[path];
-
-                // register handler
-                socket.on(path, function(data, cb){
-                    debug('on '+path, data);
-
-                    req.query = data;
-                    var res = {
-                        send: function(data){
-                            if(cb){
-                                cb(null, data);
-                                cb = null;
-                            }
-                            else{
-                                console.error('['+path+'] response send() already called');
-                            }
-                        }
+                //
+                handlers[i](req, res, function(err){
+                    if(err){
+                        console.error('['+path+'] cb returned error:', err.message);
+                        cb && cb(err.message);
+                        return;
                     }
-                    var i = 0;
-                    
-                    function applyNext(){
-                        if(i >= pathHandlers.length){
-                            // call cb if not already called
-                            cb && cb();
-                            return;
-                        }
-
-                        //
-                        pathHandlers[i](req, res, function(err){
-                            if(err){
-                                console.error('['+path+'] cb returned error:', err);
-                                cb && cb(err.message);
-                                return;
-                            }
-                            else{
-                                i += 1;
-                                applyNext();
-                            }
-                        });
+                    else{
+                        i += 1;
+                        applyNext();
                     }
-
-                    applyNext();
                 });
-            });
-        }
+            }
+
+            applyNext();
+        });
+        
     });
 
-    server.register = function(){
-        var path = arguments[0];
+    server.register = function(path, ...handlers){
         debug('register', path);
 
         if(server._handlers[path]){
             throw new Error('handler already registered: '+path);
         }
 
-        var pathHandlers = Array.prototype.slice.call(arguments, 1);
-        server._handlers[path] = pathHandlers;
+        server._handlers[path] = handlers;
     }
 
     server.unregister = function(path){
@@ -110,6 +98,5 @@ module.exports = function(server, connectCallback){
 
         delete(server._handlers[path]);
     }
-
 
 }
