@@ -79,14 +79,14 @@ module.exports = function(server, connectCallback){
         
     });
 
-    server.register = function(path, ...handlers){
+    server.register = function(path){
         debug('register', path);
 
         if(server._handlers[path]){
             throw new Error('handler already registered: '+path);
         }
 
-        server._handlers[path] = handlers;
+        server._handlers[path] = Array.prototype.slice.call(arguments, 1);
     }
 
     server.unregister = function(path){
