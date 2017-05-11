@@ -1,7 +1,7 @@
 {
-  "name": "express-socket.io",
+  "name": "express-socket.io-router",
   "version": "1.0.0",
-  "description": "Express-like interface for Socket.IO",
+  "description": "Express-like routing interface for Socket.IO",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha"

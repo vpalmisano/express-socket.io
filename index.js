@@ -1,7 +1,7 @@
 /*jshint node:true */
 'use strict';
 
-const debug = require('debug')('express-socket.io');
+const debug = require('debug')('express-socket.io-router');
 const _ = require('lodash');
 
 module.exports = function(server, connectCallback){
@@ -49,7 +49,6 @@ module.exports = function(server, connectCallback){
                 }
             }
             
-
             var i = 0;
             
             function applyNext(){
