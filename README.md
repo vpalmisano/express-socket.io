@@ -18,6 +18,9 @@ npm install --save express-socket.io-router
 const SocketIO = require('socket.io');
 const ExpressSocketIO = require('express-socket.io-router');
 
+var io = new SocketIO(8080);
+ExpressSocketIO(io);
+
 io.register('test:path', function(req, res, next){
     console.log('request:', req.query, req.socket);
     res.send({
