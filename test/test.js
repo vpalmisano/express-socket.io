@@ -84,7 +84,7 @@ describe('ExpressSocketIO tests', function(){
 
     //
     it('should response to a client request', function(done){
-        server.register('test:2', function(req, res, next){
+        server.get('test:2', function(req, res, next){
             next();
         }, function(req, res, next){
             res.send({
@@ -95,7 +95,7 @@ describe('ExpressSocketIO tests', function(){
         });
 
         client = SocketIOClient.connect('http://localhost:'+PORT);
-        client.emit('test:2', { data: 'test' }, function(err, res){
+        client.emit('get:test:2', { data: 'test' }, function(err, res){
             assert(err === null, 'response error');
             assert(res.response === true, 'wrong response');
             assert(res.data === 'test', 'wrong data');

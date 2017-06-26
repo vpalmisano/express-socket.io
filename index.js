@@ -24,7 +24,7 @@ module.exports = function(server, connectCallback){
             var cb = packet[2];
             
             if(!handlers){
-                console.warning('unknown message', path, data);
+                console.warn('unknown message', path, data);
                 cb && cb();
                 return;
             }
@@ -37,16 +37,20 @@ module.exports = function(server, connectCallback){
                 socket: socket,
             }, socket.req || {});
             
-            var res = {
-                send: function(data){
-                    if(cb){
-                        cb(null, data);
-                        cb = null;
-                    }
-                    else{
-                        console.error('['+path+'] response send() already called');
-                    }
+            //
+            function send(data){
+                if(cb){
+                    cb(null, data);
+                    cb = null;
                 }
+                else{
+                    console.error('['+path+'] response send() already called');
+                }
+            }
+
+            var res = {
+                send: send,
+                json: send,
             }
             
             var i = 0;
@@ -96,6 +100,27 @@ module.exports = function(server, connectCallback){
         }
 
         delete(server._handlers[path]);
+    }
+
+    //
+    server.get = function(path){
+        arguments[0] = 'get:'+arguments[0];
+        server.register.apply(null, arguments);
+    }
+    
+    server.post = function(path){
+        arguments[0] = 'post:'+arguments[0];
+        server.register.apply(null, arguments);
+    }
+
+    server.patch = function(path){
+        arguments[0] = 'patch:'+arguments[0];
+        server.register.apply(null, arguments);
+    }
+
+    server.delete = function(path){
+        arguments[0] = 'delete:'+arguments[0];
+        server.register.apply(null, arguments);
     }
 
 }
