@@ -49,6 +49,9 @@ module.exports = function(server, connectCallback){
             }
 
             var res = {
+                set: function(key, value){
+
+                },
                 send: send,
                 json: send,
             }
@@ -62,7 +65,7 @@ module.exports = function(server, connectCallback){
                     cb && cb();
                     return;
                 }
-
+                
                 //
                 handlers[i](req, res, function(err){
                     if(err){
@@ -82,14 +85,14 @@ module.exports = function(server, connectCallback){
         
     });
 
-    server.register = function(path){
+    server.register = function(path, handlers){
         debug('register', path);
 
         if(server._handlers[path]){
             throw new Error('handler already registered: '+path);
         }
 
-        server._handlers[path] = Array.prototype.slice.call(arguments, 1);
+        server._handlers[path] = handlers;
     }
 
     server.unregister = function(path){
@@ -103,24 +106,20 @@ module.exports = function(server, connectCallback){
     }
 
     //
-    server.get = function(path){
-        arguments[0] = 'get:'+arguments[0];
-        server.register.apply(null, arguments);
+    server.get = function(path, handlers){
+        server.register('get:'+path, handlers);
     }
     
-    server.post = function(path){
-        arguments[0] = 'post:'+arguments[0];
-        server.register.apply(null, arguments);
+    server.post = function(path, handlers){
+        server.register('post:'+path, handlers);
     }
 
-    server.patch = function(path){
-        arguments[0] = 'patch:'+arguments[0];
-        server.register.apply(null, arguments);
+    server.patch = function(path, handlers){
+        server.register('patch:'+path, handlers);
     }
 
-    server.delete = function(path){
-        arguments[0] = 'delete:'+arguments[0];
-        server.register.apply(null, arguments);
+    server.delete = function(path, handlers){
+        server.register('delete:'+path, handlers);
     }
 
 }
